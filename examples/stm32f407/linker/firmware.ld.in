@@ -1,0 +1,132 @@
+ENTRY(Reset_Handler)
+
+_estack = ORIGIN(RAM) + LENGTH(RAM);
+_Min_Heap_Size = 0;
+_Min_Stack_Size = 0x800;
+
+MEMORY
+{
+  FLASH (rx) : ORIGIN = @FLASH_ORIGIN@, LENGTH = @FLASH_LENGTH@
+  RAM (xrw) : ORIGIN = 0x20000000, LENGTH = 32K
+  TEST_CONTROL (xrw) : ORIGIN = 0x2001FF00, LENGTH = 256
+}
+
+SECTIONS
+{
+  .isr_vector :
+  {
+    . = ALIGN(4);
+    KEEP(*(.isr_vector))
+    . = ALIGN(4);
+  } > FLASH
+
+  .text :
+  {
+    . = ALIGN(4);
+    *(.text)
+    *(.text*)
+    *(.glue_7)
+    *(.glue_7t)
+    KEEP(*(.init))
+    KEEP(*(.fini))
+    . = ALIGN(4);
+    _etext = .;
+  } > FLASH
+
+  .rodata :
+  {
+    . = ALIGN(4);
+    *(.rodata)
+    *(.rodata*)
+    . = ALIGN(4);
+  } > FLASH
+
+  .ARM.extab :
+  {
+    *(.ARM.extab* .gnu.linkonce.armextab.*)
+  } > FLASH
+
+  .ARM :
+  {
+    __exidx_start = .;
+    *(.ARM.exidx*)
+    __exidx_end = .;
+  } > FLASH
+
+  .preinit_array :
+  {
+    PROVIDE_HIDDEN(__preinit_array_start = .);
+    KEEP(*(.preinit_array*))
+    PROVIDE_HIDDEN(__preinit_array_end = .);
+  } > FLASH
+
+  .init_array :
+  {
+    PROVIDE_HIDDEN(__init_array_start = .);
+    KEEP(*(SORT(.init_array.*)))
+    KEEP(*(.init_array*))
+    PROVIDE_HIDDEN(__init_array_end = .);
+  } > FLASH
+
+  .fini_array :
+  {
+    PROVIDE_HIDDEN(__fini_array_start = .);
+    KEEP(*(SORT(.fini_array.*)))
+    KEEP(*(.fini_array*))
+    PROVIDE_HIDDEN(__fini_array_end = .);
+  } > FLASH
+
+  _sidata = LOADADDR(.data);
+  .data :
+  {
+    . = ALIGN(4);
+    _sdata = .;
+    *(.data)
+    *(.data*)
+    *(.RamFunc)
+    *(.RamFunc*)
+    . = ALIGN(4);
+    _edata = .;
+  } > RAM AT > FLASH
+
+  .bss (NOLOAD) :
+  {
+    . = ALIGN(4);
+    _sbss = .;
+    __bss_start__ = _sbss;
+    *(.bss)
+    *(.bss*)
+    *(COMMON)
+    . = ALIGN(4);
+    _ebss = .;
+    __bss_end__ = _ebss;
+  } > RAM
+
+  .iap_test_control (NOLOAD) :
+  {
+    . = ALIGN(4);
+    KEEP(*(.iap_test_control))
+    . = ALIGN(4);
+  } > TEST_CONTROL
+
+  ._user_heap_stack (NOLOAD) :
+  {
+    . = ALIGN(8);
+    PROVIDE(end = .);
+    PROVIDE(_end = .);
+    . = . + _Min_Heap_Size;
+    . = . + _Min_Stack_Size;
+    . = ALIGN(8);
+  } > RAM
+
+  /DISCARD/ :
+  {
+    *(.note*)
+    *(.comment*)
+  }
+
+  .ARM.attributes 0 : { *(.ARM.attributes) }
+}
+
+ASSERT(SIZEOF(.isr_vector) <= 0x200, "vector table exceeds the reserved alignment")
+ASSERT(SIZEOF(.iap_test_control) <= LENGTH(TEST_CONTROL), "test control block is too large")

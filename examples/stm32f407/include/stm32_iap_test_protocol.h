@@ -1,0 +1,82 @@
+#ifndef STM32_IAP_TEST_PROTOCOL_H
+#define STM32_IAP_TEST_PROTOCOL_H
+
+#include <stdint.h>
+
+#define STM32_IAP_TEST_MAGIC 0x49545043u
+#define STM32_IAP_TEST_VERSION 2u
+
+typedef enum {
+    STM32_IAP_CMD_NONE = 0u,
+    STM32_IAP_CMD_INSTALL_SLOT_B = 1u,
+    STM32_IAP_CMD_HOLD_PENDING = 2u,
+    STM32_IAP_CMD_CONFIRM_CURRENT = 3u,
+    STM32_IAP_CMD_FAIL_CURRENT = 4u,
+    STM32_IAP_CMD_CLEAR_STATUS = 5u,
+    STM32_IAP_CMD_TEST_READ_FAILURE = 6u,
+    STM32_IAP_CMD_TEST_WRITE_FAILURE = 7u,
+    STM32_IAP_CMD_ACTIVATE_OTHER = 8u,
+    STM32_IAP_CMD_TEST_NON_PENDING_CONFIRM = 9u,
+    STM32_IAP_CMD_TEST_BOUNDARIES = 10u,
+    STM32_IAP_CMD_POWER_INSTALL = 11u,
+    STM32_IAP_CMD_POWER_CONFIRM = 12u,
+    STM32_IAP_CMD_POWER_PAUSE_ON_BOOT = 13u
+} stm32_iap_test_command_t;
+
+typedef enum {
+    STM32_IAP_POWER_PHASE_ERASE = 1u,
+    STM32_IAP_POWER_PHASE_HEADER = 2u,
+    STM32_IAP_POWER_PHASE_PAYLOAD_25 = 3u,
+    STM32_IAP_POWER_PHASE_PAYLOAD_50 = 4u,
+    STM32_IAP_POWER_PHASE_PAYLOAD_90 = 5u,
+    STM32_IAP_POWER_PHASE_BEFORE_PENDING = 6u,
+    STM32_IAP_POWER_PHASE_PENDING_CONTROL = 7u,
+    STM32_IAP_POWER_PHASE_FIRST_BOOT = 8u,
+    STM32_IAP_POWER_PHASE_CONFIRM_CONTROL = 9u
+} stm32_iap_power_phase_t;
+
+typedef enum {
+    STM32_IAP_STATUS_RESET = 0u,
+    STM32_IAP_STATUS_BOOTLOADER_START = 0x100u,
+    STM32_IAP_STATUS_BOOTLOADER_JUMP_A = 0x101u,
+    STM32_IAP_STATUS_BOOTLOADER_JUMP_B = 0x102u,
+    STM32_IAP_STATUS_RECOVERY = 0x1FFu,
+    STM32_IAP_STATUS_APP_A_RUNNING = 0x200u,
+    STM32_IAP_STATUS_APP_B_RUNNING = 0x201u,
+    STM32_IAP_STATUS_INSTALLING_SLOT_B = 0x210u,
+    STM32_IAP_STATUS_INSTALL_OK = 0x211u,
+    STM32_IAP_STATUS_PENDING_HELD = 0x212u,
+    STM32_IAP_STATUS_CONFIRMED = 0x213u,
+    STM32_IAP_STATUS_FAILING = 0x214u,
+    STM32_IAP_STATUS_ROLLED_BACK = 0x215u,
+    STM32_IAP_STATUS_READ_FAILURE_PASSED = 0x216u,
+    STM32_IAP_STATUS_WRITE_FAILURE_PASSED = 0x217u,
+    STM32_IAP_STATUS_SWITCHING_SLOT = 0x218u,
+    STM32_IAP_STATUS_NON_PENDING_CONFIRM_PASSED = 0x219u,
+    STM32_IAP_STATUS_BOUNDARY_GUARDS_PASSED = 0x21Au,
+    STM32_IAP_STATUS_POWER_CUT_ARMED = 0x21Bu
+} stm32_iap_test_status_t;
+
+#define STM32_IAP_STATUS_ERROR 0xE0000000u
+
+typedef struct {
+    uint32_t magic;
+    uint32_t version;
+    uint32_t argument0;
+    uint32_t argument1;
+    uint32_t status;
+    uint32_t detail;
+    uint32_t boot_count;
+    uint32_t last_slot;
+    uint32_t last_boot_address;
+    uint32_t reset_cause;
+    uint32_t reserved[5];
+    uint32_t command;
+} stm32_iap_test_control_t;
+
+extern volatile stm32_iap_test_control_t g_stm32_iap_test_control;
+
+void stm32_iap_test_control_init(void);
+void stm32_iap_test_set_status(uint32_t status, uint32_t detail);
+
+#endif

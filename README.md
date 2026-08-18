@@ -1,5 +1,23 @@
 # 一步一步剖析 IAP 升级架构（从演进过程理解设计）
 
+> 最小代码设计入口：见 [A/B 双镜像 IAP MVP 设计](docs/ab-iap-mvp-design.md)。
+> C 代码入口：见 `include/iap/`、`src/` 和 `tests/test_iap_core.c`，其中 `iap_bootloader_run` 是 Bootloader 主流程入口。
+> 上板前后的必测项目：见 [开发板验证清单](docs/board-validation-checklist.md)。
+> STM32F407ZGT6 实机示例：见 [STM32F407 上板说明](examples/stm32f407/README.md)。
+> 当前实测证据：见 [STM32F407ZG 开发板验证记录](docs/board-validation-results-stm32f407zg.md)。
+
+## 本地主机验证
+
+```bash
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+当前仓库提供平台无关的 IAP Core、Bootloader 流程抽象、内存存储测试替身，以及
+STM32F407ZGT6 的 Flash 驱动、链接脚本、向量表跳转、复位和看门狗适配。自动化板测
+已经完成，真实掉电重复测试仍在进行；全部推送门禁通过前不会推送远端。
+
 IAP，全称为 **In-Application Programming**，通常翻译为“在应用编程”。
 
 它解决的核心问题是：

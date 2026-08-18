@@ -1,5 +1,11 @@
 # Prerequisites
 *.d
+build/
+build-*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+artifacts/
 
 # Object files
 *.o
